@@ -10,11 +10,13 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn import ensemble, metrics
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, recall_score, precision_score
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn import neighbors
 import pandas as pd
+import warnings
+warnings.filterwarnings("ignore")
 
 
 def get_data():
@@ -38,11 +40,9 @@ X_train, X_validation, y_train, y_validation = train_test_split(
 
 
 # KNN
-time_start = time.time()
 knn = neighbors.NearestCentroid()
-knn.fit(X_train, y_train)
+knn.fit(X_train, y_train.ravel())
 y_predict = knn.predict(X_train)
-print(accuracy_score(y_train, y_predict))
-time_end = time.time()
-time_c = time_end - time_start
-print('time cost', time_c, 's')
+print('accuracy_score :', accuracy_score(y_train, y_predict))
+print('recall_score   :', recall_score(y_train, y_predict, average='macro'))
+print('precision_score:', precision_score(y_train, y_predict, average='macro'))
