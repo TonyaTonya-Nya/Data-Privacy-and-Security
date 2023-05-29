@@ -1,18 +1,23 @@
 import pandas as pd
 import matplotlib.pylab as pl
 import matplotlib.patches as patches
+K=5
+L=3
+P=0.5
 
 names = (
-    'date', 'Texas', 'Dubai','Brent'
+    'a1','a2','a3','a4','a5','a6','a7','a8','a9','a10','a11','a12','a13','a14','a15','a16','a17','a18','a19','a20','a21','a22','a23','a24','a25','a26','a27','a28','a29','a30','a31','a32','a33','a34','a35','a36','a37','a38','a39','a40','a41','a42','a43','a44','a45','a46','a47','a48','a49','a50','a51','a52','a53','a54','a55','a56','a57','a58','a59','a60','a61','a62','a63','a64','a65','a66','a67','a68','a69','a70','a71','a72','a73','a74','a75','a76','a77','a78','a79','a80','a81','a82','a83','a84','a85','a86','a87','a88','a89','a90','a91','a92','a93','a94','a95','a96','a97','a98','a99','a100','a101','a102','a103','a104','a105','a106','a107','a108','a109','a110','a111','a112','a113','a114','a115','a116','a117','a118','a119','a120','a121','a122','a123','a124','a125','a126','a127','a128','malware'
 )
 
 categorical = set((
-    'date',
+   'a1','a2','a3','a4','a5','a6','a7','a8','a9','a10','a11','a12','a13','a14','a15','a16','a17','a18','a19','a20','a21','a22','a23','a24','a25','a26','a27','a28','a29','a30','a31','a32','a33','a34','a35','a36','a37','a38','a39','a40','a41','a42','a43','a44','a45','a46','a47','a48','a49','a50','a51','a52','a53','a54','a55','a56','a57','a58','a59','a60','a61','a62','a63','a64','a65','a66','a67','a68','a69','a70','a71','a72','a73','a74','a75','a76','a77','a78','a79','a80','a81','a82','a83','a84','a85','a86','a87','a88','a89','a90','a91','a92','a93','a94','a95','a96','a97','a98','a99','a100'
 ))
-df = pd.read_csv("./in.csv", sep=", ",
+df = pd.read_csv("./train.csv", sep=",",
                  header=None, names=names, index_col=False, engine='python')
 
 print(df.head())
+
+
 
 for name in categorical:
     df[name] = df[name].astype('category')
@@ -49,7 +54,7 @@ def split(df, partition, column):
         return (dfl, dfr)
 
 
-def is_k_anonymous(df, partition, sensitive_column, k=3):
+def is_k_anonymous(df, partition, sensitive_column, k=K):
     if len(partition) < k:
         return False
     return True
@@ -72,12 +77,13 @@ def partition_dataset(df, feature_columns, sensitive_column, scale, is_valid):
     return finished_partitions
 
 
-feature_columns = ['Texas', 'Dubai']
-sensitive_column = 'Brent'
+feature_columns = ['a101','a102','a103','a104','a105','a106','a107','a108','a109','a110','a111','a112','a113','a114','a115','a116','a117','a118','a119','a120','a121', 'a122','a123', 'a124', 'a125', 'a126','a127', 'a128']
+sensitive_column = 'malware'
 finished_partitions = partition_dataset(
     df, feature_columns, sensitive_column, full_spans, is_k_anonymous)
 
 print(len(finished_partitions))
+
 
 
 def build_indexes(df):
@@ -172,12 +178,11 @@ def build_anonymized_dataset(df, partitions, feature_columns, sensitive_column, 
         grouped_columns = df.loc[partition].agg(aggregations, squeeze=False)
         sensitive_counts = df.loc[partition].groupby(
             sensitive_column).agg({sensitive_column: 'count'})
-        
 
-        #insert
-        df2=grouped_columns.to_frame()
-        grouped_columns=pd.DataFrame(df2.values.T,columns=df2.index)
-        #insert_end
+        # insert
+        df2 = grouped_columns.to_frame()
+        grouped_columns = pd.DataFrame(df2.values.T, columns=df2.index)
+        # insert_end
 
         values = grouped_columns.iloc[0].to_dict()
 
@@ -197,22 +202,20 @@ dfn = build_anonymized_dataset(
     df, finished_partitions, feature_columns, sensitive_column)
 
 
-dfn.to_csv('out.csv')
-
-#print(dfn.sort_values(feature_columns+[sensitive_column]))
+dfn.to_csv('out-k.csv')
 
 
 
-
-
-
-# 非 k anonymity
 '''
+# print(dfn.sort_values(feature_columns+[sensitive_column]))
+
+
+# l diverse
 def diversity(df, partition, column):
     return len(df[column][partition].unique())
 
 
-def is_l_diverse(df, partition, sensitive_column, l=2):
+def is_l_diverse(df, partition, sensitive_column, l=L):
     return diversity(df, partition, sensitive_column) >= l
 
 
@@ -233,10 +236,17 @@ plot_rects(df, ax, rects, column_x, column_y, facecolor='r')
 pl.scatter(df[column_x], df[column_y])
 pl.show()
 
+
+# t-closeness
+
+
 dfl = build_anonymized_dataset(
     df, finished_l_diverse_partitions, feature_columns, sensitive_column)
 
-print(dfl.sort_values([column_x, column_y, sensitive_column]))
+dfl.to_csv('out-l.csv')
+
+
+#print(dfl.sort_values([column_x, column_y, sensitive_column]))
 
 global_freqs = {}
 total_count = float(len(df))
@@ -245,7 +255,7 @@ for value, count in group_counts.to_dict().items():
     p = count/total_count
     global_freqs[value] = p
 
-print(global_freqs)
+# print(global_freqs)
 
 
 def t_closeness(df, partition, column, global_freqs):
@@ -260,8 +270,8 @@ def t_closeness(df, partition, column, global_freqs):
     return d_max
 
 
-def is_t_close(df, partition, sensitive_column, global_freqs, p=0.2):
-    if not sensitive_column in categorical:
+def is_t_close(df, partition, sensitive_column, global_freqs, p=P):
+    if sensitive_column not in categorical:
         raise ValueError("this method only works for categorical values")
     return t_closeness(df, partition, sensitive_column, global_freqs) <= p
 
@@ -274,7 +284,7 @@ print(len(finished_t_close_partitions))
 dft = build_anonymized_dataset(
     df, finished_t_close_partitions, feature_columns, sensitive_column)
 
-print(dft.sort_values([column_x, column_y, sensitive_column]))
+#print(dft.sort_values([column_x, column_y, sensitive_column]))
 
 column_x, column_y = feature_columns[:2]
 t_close_rects = get_partition_rects(
@@ -286,4 +296,6 @@ plot_rects(df, ax, t_close_rects, column_x,
            column_y, edgecolor='b', facecolor='b')
 pl.scatter(df[column_x], df[column_y])
 pl.show()
+
+dft.to_csv('out-t.csv')
 '''

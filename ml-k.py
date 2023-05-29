@@ -20,7 +20,7 @@ warnings.filterwarnings("ignore")
 
 
 def get_data():
-    df = pd.read_csv('./output.csv')
+    df = pd.read_csv('./k3/out-k-3.csv')
     return df
 
 
@@ -28,14 +28,16 @@ df = get_data()  # 取資料
 # print(df.head()) # 檢查資料
 
 
-y = df[['Brent']].values.reshape(-1, 1)  # 取預測目標
+y = df[['130']].values.reshape(-1, 1)  # 取預測目標
 # print(y)
 
 # 取特徵值
-X = df.drop('id', axis=1).drop('Brent', axis=1).drop(
-    'count', axis=1).values  # 取特徵值(濾除特徵值以外的)
+X = df.drop('id', axis=1).drop('128', axis=1).drop(
+    '129', axis=1).drop('130', axis=1).values  # 取特徵值(濾除特徵值以外的)
 # print(X)
 
+print(X.shape)
+print(y.shape)
 X_train, X_validation, y_train, y_validation = train_test_split(
     X, y, test_size=0.2)  # 資料以8:2做訓練與自我驗證
 
